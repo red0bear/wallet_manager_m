@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="517.0" prefWidth="525.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gladic.corp.wallet_manager_m.FXMLController">
+  <children>
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+         <children>
+            <TabPane prefHeight="551.0" prefWidth="654.0" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab id="AnchorPaneWalletInfo" fx:id="wallet_manage" text="WALLET INFO">
+                  <content>
+                    <AnchorPane id="AnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="365.0" prefWidth="433.0">
+                           <children>
+                              <ComboBox fx:id="walletsel" layoutX="146.0" layoutY="16.0" onAction="#handleselectionwalletAction" prefWidth="150.0" />
+                              <Label layoutX="19.0" layoutY="9.0" prefHeight="38.0" prefWidth="116.0" text="Choose wallet" />
+                              <Label layoutX="14.0" layoutY="68.0" prefHeight="32.0" prefWidth="69.0" text="Disponible" />
+                              <Button fx:id="buttonsend" layoutX="13.0" layoutY="461.0" mnemonicParsing="false" onAction="#handlebuttonsendaction" prefHeight="50.0" prefWidth="334.0" text="SEND" />
+                              <Label layoutX="12.0" layoutY="102.0" prefHeight="38.0" prefWidth="73.0" text="Pendent" />
+                              <Label layoutX="14.0" layoutY="142.0" prefHeight="38.0" prefWidth="44.0" text="Total" />
+                              <Label fx:id="disponible" layoutX="103.0" layoutY="73.0" prefHeight="22.0" prefWidth="251.0" text="0.00000000" />
+                              <Label fx:id="immature" layoutX="103.0" layoutY="110.0" prefHeight="22.0" prefWidth="246.0" text="0.00000000" />
+                              <Separator layoutX="11.0" layoutY="139.0" prefHeight="3.0" prefWidth="338.0" />
+                              <Label fx:id="total" layoutX="103.0" layoutY="150.0" prefHeight="22.0" prefWidth="245.0" text="0.00000000" />
+                              <Label layoutX="11.0" layoutY="194.0" text="Account" />
+                              <ComboBox fx:id="accountsel" layoutX="71.0" layoutY="189.0" onAction="#handleselectionaccountAction" prefHeight="25.0" prefWidth="273.0" />
+                              <Label layoutX="14.0" layoutY="263.0" prefHeight="38.0" prefWidth="44.0" text="Total" />
+                              <Label fx:id="totalaccount" layoutX="75.0" layoutY="271.0" prefHeight="22.0" prefWidth="118.0" text="0.00000000" />
+                              <Label layoutX="11.0" layoutY="225.0" prefHeight="38.0" prefWidth="50.0" text="Hash" />
+                              <Label fx:id="hashstr" alignment="CENTER" layoutX="335.0" layoutY="30.0" prefHeight="35.0" prefWidth="312.0" textAlignment="CENTER" wrapText="true" />
+                              <ImageView fx:id="hashqrcode" fitHeight="262.0" fitWidth="281.0" layoutX="360.0" layoutY="80.0" pickOnBounds="true" preserveRatio="true" />
+                              <Label layoutX="12.0" layoutY="327.0" text="LABEL" />
+                              <TextField fx:id="newaccountname" layoutX="63.0" layoutY="316.0" prefHeight="37.0" prefWidth="170.0" text="account" />
+                              <Button fx:id="btnnewaddr" layoutX="237.0" layoutY="317.0" mnemonicParsing="false" onAction="#HandlenewaddrAction" prefHeight="35.0" prefWidth="112.0" text="NEW ADDR" />
+                              <ComboBox fx:id="hashsel" layoutX="71.0" layoutY="231.0" onAction="#handleselectionhashAction" prefHeight="25.0" prefWidth="273.0" />
+                              <Label layoutX="12.0" layoutY="372.0" text="VALUE" />
+                              <TextField fx:id="valuetosend" layoutX="63.0" layoutY="361.0" prefHeight="37.0" prefWidth="172.0" />
+                              <Separator layoutX="12.0" layoutY="301.0" prefHeight="0.0" prefWidth="328.0" />
+                              <Button fx:id="btnrefresh" layoutX="237.0" layoutY="362.0" mnemonicParsing="false" onAction="#HandlerefreshvalueAction" prefHeight="35.0" prefWidth="112.0" text="REFRESH" />
+                           </children></AnchorPane>
+                  </content>
+                </Tab>
+                <Tab fx:id="telegram" text="TELEGRAM INFO">
+                  <content>
+                    <AnchorPane fx:id="telegram_work" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <Label layoutX="22.0" layoutY="221.0" text="ALLOW" />
+                              <ComboBox fx:id="walletselallowrem" layoutX="131.0" layoutY="216.0" prefWidth="150.0" />
+                              <Label layoutX="17.0" layoutY="33.0" text="ENTER ID" />
+                              <TextField fx:id="userid" layoutX="124.0" layoutY="28.0" />
+                              <Label layoutX="17.0" layoutY="66.0" text="NAME" />
+                              <TextField fx:id="nameid" layoutX="124.0" layoutY="61.0" />
+                              <Button fx:id="addusermanage" layoutX="17.0" layoutY="100.0" mnemonicParsing="false" onAction="#HandleadduserAction" prefHeight="25.0" prefWidth="262.0" text="ADD  NEW USER" />
+                              <Separator layoutX="291.0" layoutY="8.0" orientation="VERTICAL" prefHeight="509.0" prefWidth="16.0" />
+                              <Button fx:id="deleteuser" layoutX="14.0" layoutY="181.0" mnemonicParsing="false" onAction="#HandledeleteuserAction" prefHeight="25.0" prefWidth="269.0" text="DELETE USER" />
+                              <ComboBox fx:id="userselect" layoutX="13.0" layoutY="149.0" prefHeight="25.0" prefWidth="270.0" />
+                              <Separator layoutX="15.0" layoutY="139.0" prefHeight="1.0" prefWidth="273.0" />
+                              <Label layoutX="12.0" layoutY="377.0" text="BOT USER NAME" />
+                              <TextField fx:id="botusername" layoutX="126.0" layoutY="372.0" />
+                              <Label layoutX="12.0" layoutY="415.0" text="BOT TOKEN USER" />
+                              <TextField fx:id="bottokenname" layoutX="126.0" layoutY="410.0" />
+                              <Button fx:id="startconfigbot" layoutX="9.0" layoutY="457.0" mnemonicParsing="false" onAction="#HandlestartbotconfigAction" prefHeight="47.0" prefWidth="274.0" text="CONFIGURE BOT" />
+                              <Separator layoutX="16.0" layoutY="362.0" prefHeight="3.0" prefWidth="271.0" />
+                              <Button fx:id="allow" layoutX="16.0" layoutY="313.0" mnemonicParsing="false" onAction="#HandleallowAction" prefHeight="25.0" prefWidth="115.0" text="ALLOW " />
+                              <Button fx:id="disallow" layoutX="172.0" layoutY="313.0" mnemonicParsing="false" onAction="#HandledisallowAction" prefHeight="25.0" prefWidth="115.0" text="DISALLOW" />
+                              <TextArea fx:id="logarea" layoutX="307.0" layoutY="41.0" prefHeight="469.0" prefWidth="341.0" />
+                              <Label alignment="CENTER" layoutX="317.0" layoutY="8.0" prefHeight="30.0" prefWidth="307.0" text="LOG" />
+                              <Label layoutX="22.0" layoutY="252.0" text="DISALLOW" />
+                              <ComboBox fx:id="walletseldisallowrem" layoutX="131.0" layoutY="247.0" prefWidth="150.0" />
+                           </children></AnchorPane>
+                  </content>
+                </Tab>
+                  <Tab fx:id="config" text="CONFIGURATION">
+                     <content>
+                        <AnchorPane fx:id="config_worker" minHeight="0.0" minWidth="0.0" prefHeight="395.0" prefWidth="527.0">
+                           <children>
+                              <Label layoutX="14.0" layoutY="60.0" prefHeight="47.0" prefWidth="59.0" text="IP" />
+                              <TextField fx:id="rpcconnect" layoutX="73.0" layoutY="64.0" prefHeight="40.0" prefWidth="289.0" text="192.168.10.5" />
+                              <Label layoutX="14.0" layoutY="107.0" prefHeight="47.0" prefWidth="59.0" text="USER" />
+                              <TextField fx:id="rpcuser" layoutX="73.0" layoutY="111.0" prefHeight="40.0" prefWidth="289.0" text="testuser" />
+                              <Label layoutX="14.0" layoutY="154.0" prefHeight="47.0" prefWidth="59.0" text="PASS" />
+                              <TextField fx:id="rpcpass" layoutX="73.0" layoutY="158.0" prefHeight="40.0" prefWidth="289.0" text="testpass" />
+                              <Label layoutX="14.0" layoutY="201.0" prefHeight="47.0" prefWidth="59.0" text="PORT" />
+                              <TextField fx:id="rpcport" layoutX="73.0" layoutY="205.0" prefHeight="40.0" prefWidth="289.0" text="8570" />
+                              <Button fx:id="startbutton" layoutX="15.0" layoutY="259.0" mnemonicParsing="false" onAction="#HandlestartbuttonAction" prefHeight="52.0" prefWidth="348.0" text="START" />
+                              <Label layoutX="14.0" layoutY="14.0" prefHeight="47.0" prefWidth="59.0" text="WALLET" />
+                              <TextField fx:id="walletstart" layoutX="73.0" layoutY="18.0" prefHeight="40.0" prefWidth="289.0" text="XXX" />
+                           </children></AnchorPane>
+                     </content>
+                  </Tab>
+              </tabs>
+            </TabPane>
+         </children>
+    </AnchorPane>
+  </children>
+</VBox>

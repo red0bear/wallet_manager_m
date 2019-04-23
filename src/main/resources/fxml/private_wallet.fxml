@@ -57,18 +57,18 @@
                               <Label layoutX="22.0" layoutY="221.0" text="ALLOW" />
                               <ComboBox fx:id="walletselallowrem" layoutX="131.0" layoutY="216.0" prefWidth="150.0" />
                               <Label layoutX="17.0" layoutY="33.0" text="ENTER ID" />
-                              <TextField fx:id="userid" layoutX="124.0" layoutY="28.0" />
+                              <TextField fx:id="userid" layoutX="124.0" layoutY="28.0" text="Long_integer_here" />
                               <Label layoutX="17.0" layoutY="66.0" text="NAME" />
-                              <TextField fx:id="nameid" layoutX="124.0" layoutY="61.0" />
+                              <TextField fx:id="nameid" layoutX="124.0" layoutY="61.0" text="tag_name_here" />
                               <Button fx:id="addusermanage" layoutX="17.0" layoutY="100.0" mnemonicParsing="false" onAction="#HandleadduserAction" prefHeight="25.0" prefWidth="262.0" text="ADD  NEW USER" />
                               <Separator layoutX="291.0" layoutY="8.0" orientation="VERTICAL" prefHeight="509.0" prefWidth="16.0" />
                               <Button fx:id="deleteuser" layoutX="14.0" layoutY="181.0" mnemonicParsing="false" onAction="#HandledeleteuserAction" prefHeight="25.0" prefWidth="269.0" text="DELETE USER" />
                               <ComboBox fx:id="userselect" layoutX="13.0" layoutY="149.0" prefHeight="25.0" prefWidth="270.0" />
                               <Separator layoutX="15.0" layoutY="139.0" prefHeight="1.0" prefWidth="273.0" />
                               <Label layoutX="12.0" layoutY="377.0" text="BOT USER NAME" />
-                              <TextField fx:id="botusername" layoutX="126.0" layoutY="372.0" />
+                              <TextField fx:id="botusername" layoutX="126.0" layoutY="372.0" text="my_love_name_bot" />
                               <Label layoutX="12.0" layoutY="415.0" text="BOT TOKEN USER" />
-                              <TextField fx:id="bottokenname" layoutX="126.0" layoutY="410.0" />
+                              <TextField fx:id="bottokenname" layoutX="126.0" layoutY="410.0" text="110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw" />
                               <Button fx:id="startconfigbot" layoutX="9.0" layoutY="457.0" mnemonicParsing="false" onAction="#HandlestartbotconfigAction" prefHeight="47.0" prefWidth="274.0" text="CONFIGURE BOT" />
                               <Separator layoutX="16.0" layoutY="362.0" prefHeight="3.0" prefWidth="271.0" />
                               <Button fx:id="allow" layoutX="16.0" layoutY="313.0" mnemonicParsing="false" onAction="#HandleallowAction" prefHeight="25.0" prefWidth="115.0" text="ALLOW " />

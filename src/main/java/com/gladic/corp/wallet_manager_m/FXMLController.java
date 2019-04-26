@@ -46,8 +46,13 @@ public class FXMLController implements Initializable {
     private boolean block_a = true;
     private boolean block_s = true;
     private boolean block_c = true;
+    private boolean block_label = true;
+    
     private boolean block_b_start = false;
-       
+    
+    /**/
+    private boolean block_telegram_a = true;
+    
     @FXML
     private Label disponible;
     
@@ -121,8 +126,8 @@ public class FXMLController implements Initializable {
 
     /**/
     
-    //@FXML
-   // private Label showselecteduser;
+    @FXML
+    private ComboBox<String> walletseldisallowrem;
     
     @FXML
     private ComboBox<String> userselect;
@@ -143,12 +148,14 @@ public class FXMLController implements Initializable {
         handler_msg.add_user(userid.getText(), nameid.getText());
         
         user_list.add(userid.getText()+":"+nameid.getText());
+
         
+        block_telegram_a = true;
+        block_s = block_a = block_h = true;
+                  
         userselect.setItems(observableArrayList(user_list));
         userselect.getSelectionModel().selectFirst();
         
-        block_s = block_a = block_h = true;
-            
         client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_new_account(newaccountname.getText());
             
         client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
@@ -169,6 +176,16 @@ public class FXMLController implements Initializable {
         hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
 
         block_s = block_a = block_h = false;
+        block_telegram_a = false;
+    }
+    
+    @FXML
+    private void HandleuserselAction(ActionEvent event)
+    {
+        if(block_telegram_a)
+        {}
+        else
+            walletseldisallowrem.setItems(observableArrayList(handler_msg.get_list_permissions(userselect.getSelectionModel().getSelectedIndex())));
     }
     
     @FXML
@@ -177,19 +194,35 @@ public class FXMLController implements Initializable {
     @FXML
     private void HandleallowAction(ActionEvent event)
     {
-        handler_msg.update_permissions(userselect.getSelectionModel().getSelectedIndex(),walletselallowrem.getSelectionModel().getSelectedIndex(), walletselallowrem.getSelectionModel().getSelectedItem());
+        if(client_manager.isEmpty())
+        {
+        }
+        else
+        {
+            if(block_telegram_a)
+            {}
+            else
+            {
+                handler_msg.update_permissions(userselect.getSelectionModel().getSelectedIndex(),walletselallowrem.getSelectionModel().getSelectedIndex(), walletselallowrem.getSelectionModel().getSelectedItem());
+                walletseldisallowrem.setItems(observableArrayList(handler_msg.get_list_permissions(userselect.getSelectionModel().getSelectedIndex())));
+            }
+        }
     }
         
     @FXML
     private void HandledisallowAction(ActionEvent event)
-    {
-    
+    {    
+        if(client_manager.isEmpty())
+        {
+        }
+        else
+            walletseldisallowrem.setItems(observableArrayList(handler_msg.rem_permissions(userselect.getSelectionModel().getSelectedIndex(),walletseldisallowrem.getSelectionModel().getSelectedIndex())));
     }
     
     @FXML
     private void HandlestartbotconfigAction(ActionEvent event)
     {
-        handler_msg = new telegramwalletmessagehandler(botusername.getText(),bottokenname.getText());
+        handler_msg = new telegramwalletmessagehandler(botusername.getText(),bottokenname.getText(),logarea);
         handler_msg.set_url_wallet(wallet_name, wallet_conn);
         handler_msg.StartIpMachine();
     }
@@ -213,7 +246,7 @@ public class FXMLController implements Initializable {
         }
         else
         {
-            block_s = block_a = block_h = true;
+            block_label = block_s = block_a = block_h = true;
             
             client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_new_account(newaccountname.getText());
             
@@ -234,7 +267,7 @@ public class FXMLController implements Initializable {
 
             hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
 
-            block_s = block_a = block_h = false;            
+            block_label = block_s = block_a = block_h = false;            
         }
     }
     
@@ -257,7 +290,7 @@ public class FXMLController implements Initializable {
         
         if(!block_c)
         {
-            block_s = block_a = block_h = true;
+           block_label = block_s = block_a = block_h = true;
 
             client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
             disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
@@ -276,7 +309,7 @@ public class FXMLController implements Initializable {
 
             hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
 
-            block_s = block_a = block_h = false;
+            block_label = block_s = block_a = block_h = false;
         }
     }
     
@@ -333,7 +366,7 @@ public class FXMLController implements Initializable {
         
       // if(!block_b_start)
       // {
-           block_c = block_s = block_a = block_h = true;
+           block_label = block_c = block_s = block_a = block_h = true;
            
            wallet.add(walletstart.getText());
 
@@ -367,7 +400,7 @@ public class FXMLController implements Initializable {
             
            hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
 
-           block_c = block_s = block_a = block_h = false;  
+           block_label = block_c = block_s = block_a = block_h = false;  
            block_b_start = true;
       // }
     }
@@ -401,6 +434,8 @@ public class FXMLController implements Initializable {
                             public void run() {
                                     if(block_s)
                                     {}
+                                    else if(block_label)
+                                    {}
                                     else 
                                     {
                                         client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
@@ -414,5 +449,5 @@ public class FXMLController implements Initializable {
                 }, 0, 2000);
         
     }    
-       
+      
 }

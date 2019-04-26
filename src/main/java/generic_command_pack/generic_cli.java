@@ -129,7 +129,7 @@ public class generic_cli {
     public List<String> generic_get_address_by_account (String myaccount)
     {      
         hashgot = bitcoinClient.getAddressesByAccount(myaccount);
-                        
+                       
         return hashgot;
     }
     

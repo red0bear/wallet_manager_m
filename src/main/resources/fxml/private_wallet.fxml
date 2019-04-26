@@ -54,7 +54,7 @@
                   <content>
                     <AnchorPane fx:id="telegram_work" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <Label layoutX="22.0" layoutY="221.0" text="ALLOW" />
+                              <Label layoutX="22.0" layoutY="221.0" text="WALLET" />
                               <ComboBox fx:id="walletselallowrem" layoutX="131.0" layoutY="216.0" prefWidth="150.0" />
                               <Label layoutX="17.0" layoutY="33.0" text="ENTER ID" />
                               <TextField fx:id="userid" layoutX="124.0" layoutY="28.0" text="Long_integer_here" />

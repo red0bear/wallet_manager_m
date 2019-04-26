@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.TextArea;
 import javax.imageio.ImageIO;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -58,11 +59,11 @@ public class telegramwalletmessagehandler {
     private int global_counter = 0;
     
      
-    public telegramwalletmessagehandler(String id, String user)
+    public telegramwalletmessagehandler(String id, String user,TextArea text)
     {        
         
         ApiContextInitializer.init();
-        messager = new Telegrammessage(id,user);
+        messager = new Telegrammessage(id,user,text);
         telegramBotsApi = new TelegramBotsApi();
         
         try {
@@ -106,8 +107,13 @@ public class telegramwalletmessagehandler {
         runable_auto = false;
     }
     
-    /*RPC WORK*/
+    /**/
+    public List<String> get_list_permissions(int index)
+    {
+        return user_control.get(index).list_perm();
+    }
     
+    /*RPC WORK*/
     public void set_url_wallet(List<String> wallet_name, List<URL> wallet_conn)
     {
         this.wallet_name = wallet_name;
@@ -186,6 +192,24 @@ public class telegramwalletmessagehandler {
                 }
             }
         }
+    }
+    
+    public List<String> rem_permissions(int index_user,int index_wallet)
+    {
+        if(user_control.isEmpty())
+        {
+        }
+        else if(user_control.get(index_user).list_perm().isEmpty())
+        {
+        }
+        else
+        {
+            user_control.get(index_user).rem_permission(index_wallet);
+            
+            return user_control.get(index_user).list_perm();
+        }
+        
+        return null;
     }
     
     private boolean check_permission(String value)
@@ -327,30 +351,12 @@ public class telegramwalletmessagehandler {
                        }
                    }
                    else if(aux.compareTo("!send") == 0)
-                   {
-                       boolean found_addr = false;
-                       for(String aux_list : command.generic_get_address_by_account(current_id))
-                       {
-                           if(aux_list.compareTo(values[2]) == 0)
-                           {
-                               found_addr = true;
-                           }
-                       }
-                      
-                       if(found_addr)
-                       {   
-                            String result = command.generic_send_from_to_address(current_id, values[2], new BigDecimal(values[3]));
-                            message_t_sent(wallet_name.get(type_wallet));
-                            message_t_sent("txid result");
-                            message_t_sent(result);
-                            return;
-                       }else
-                       {
-                           
-                           message_t_sent(wallet_name.get(type_wallet) + " address not found .... ");
-                           return;
-                       }
-                       
+                   {                        
+                       String result = command.generic_send_from_to_address(current_id, values[2], new BigDecimal(values[3]));
+                       message_t_sent(wallet_name.get(type_wallet));
+                       message_t_sent("txid result");
+                       message_t_sent(result);
+                       return;
                     }
                break;          
            }
@@ -418,7 +424,7 @@ public class telegramwalletmessagehandler {
                 {}
                 else
                 {
-                   System.out.println(received);
+                   //System.out.println(received);
 
                     for(userinfocontrol aux : user_control)
                     {

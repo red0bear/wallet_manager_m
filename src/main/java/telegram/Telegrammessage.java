@@ -2,7 +2,10 @@ package telegram;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import javafx.scene.control.TextArea;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -23,10 +26,17 @@ public class Telegrammessage extends TelegramLongPollingBot {
     
     private List<String> message = new ArrayList();
     
-    public Telegrammessage(String robot_name, String token_robot)
+    private TextArea watch_bot;
+    
+    private String text;
+    private boolean first_time = true;
+    
+    public Telegrammessage(String robot_name, String token_robot,TextArea value)
     {
         this.robot_name  = robot_name;
         this.token_robot = token_robot;
+        
+        this.watch_bot = value;
     }
     
     
@@ -37,7 +47,7 @@ public class Telegrammessage extends TelegramLongPollingBot {
         else
             return message.remove(0);
     }
-    
+   
     
     public void onUpdateReceived(Update update) {
         // TODO
@@ -45,6 +55,25 @@ public class Telegrammessage extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText())
         {
             message.add(update.getMessage().getText()+":"+update.getMessage().getChatId());   
+            
+            if(first_time)
+            {
+                text = "ID : " + update.getMessage().getChatId()+"\n"+
+                       "Author : " + update.getMessage().getChat().getUserName()+"\n"+
+                       "Date : " + new Date(TimeUnit.SECONDS.toMillis(update.getMessage().getDate())).toString()+"\n"+
+                       "Message : " + update.getMessage().getText()+"\n"; 
+                
+                first_time = false;
+            }else
+            {
+                text = text + "\n"+ 
+                       "ID : " + update.getMessage().getChatId()+"\n"+
+                       "Author : " + update.getMessage().getChat().getUserName()+"\n"+
+                       "Date : " + new Date(TimeUnit.SECONDS.toMillis(update.getMessage().getDate())).toString()+"\n"+
+                       "Message : " + update.getMessage().getText()+"\n"; 
+            }
+            
+            watch_bot.setText(text);            
         }
         /*
         if (update.hasMessage() && update.getMessage().hasText()) {

@@ -1,6 +1,7 @@
 package com.gladic.corp.wallet_manager_m;
 
-import generic_command_pack.generic_cli;
+import filemanager.fileconfigwiter;
+import generic_command_pack.generic_command_cli_jna;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -27,19 +28,23 @@ public class FXMLController implements Initializable {
     
     /* WALLET MANAGER LOCAL CONTROL */
     private List<String> wallet = new ArrayList();
-    private List<generic_cli> client_manager = new ArrayList();
+    private List<generic_command_cli_jna> client_manager = new ArrayList();
     
     /**/
     private List<String> user_list = new ArrayList();
     
     /**/
     private List<String> wallet_name = new ArrayList();
-    private List<URL> wallet_conn = new ArrayList();    
+    private List<String> wallet_conn = new ArrayList();    
     
     /**/
-    private generic_cli cli_worker;
+    private generic_command_cli_jna cli_worker;
       
     telegramwalletmessagehandler handler_msg;
+    
+    
+    /*CFG WALLET*/
+    fileconfigwiter wallet_cfg = new fileconfigwiter();
     
     /**/
     private boolean block_h = true;
@@ -74,6 +79,9 @@ public class FXMLController implements Initializable {
     /**/
     
     @FXML
+    private TextField cliexec;
+    
+    @FXML
     private TextField walletstart;
     
     @FXML
@@ -96,6 +104,10 @@ public class FXMLController implements Initializable {
     
     @FXML
     private TextField newaccountname;
+    
+    
+    @FXML
+    private TextField hashtosendvalue;
 
     @FXML
     private ComboBox<String> walletsel;
@@ -140,6 +152,94 @@ public class FXMLController implements Initializable {
     
     @FXML
     private Button allow;
+
+    private void config_wallet_r(String clipath ,String walletname,String rpcip,String rpcuser,String rpcpass,String rpcport)
+    {
+        System.out.println("button event");       
+
+        block_label = block_c = block_s = block_a = block_h = true;
+           
+        wallet.add(walletname);
+
+        walletsel.setItems(observableArrayList(wallet));
+        walletsel.getSelectionModel().selectFirst();
+        
+        cli_worker = new generic_command_cli_jna(clipath,rpcip,rpcuser,rpcpass,rpcport);
+        client_manager.add(cli_worker);
+           
+        wallet_name.add(walletname);
+        wallet_conn.add(cli_worker.get_url());
+           
+        walletselallowrem.setItems(observableArrayList(wallet));
+        walletselallowrem.getSelectionModel().selectFirst();
+              
+        client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
+        disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
+        immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
+        total.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.immature_balance);            
+                       
+        accountsel.setItems(observableArrayList(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_list_accounts())); 
+        accountsel.getSelectionModel().selectFirst();
+
+        hashsel.setItems(observableArrayList(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account(accountsel.getSelectionModel().getSelectedItem())));
+        hashsel.getSelectionModel().selectFirst();
+
+        totalaccount.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account().get(accountsel.getSelectionModel().getSelectedIndex())); 
+        valuetosend.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account ().get(accountsel.getSelectionModel().getSelectedIndex()));
+           
+        hashstr.setText(hashsel.getSelectionModel().getSelectedItem());
+            
+        hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
+
+        block_label = block_c = block_s = block_a = block_h = false;  
+        block_b_start = true;        
+    }    
+    
+    
+    
+    private void config_wallet_m(String clipath , String walletname,String rpcip,String rpcuser,String rpcpass,String rpcport)
+    {
+        System.out.println("button event");       
+
+        block_label = block_c = block_s = block_a = block_h = true;
+           
+        wallet.add(walletname);
+
+        walletsel.setItems(observableArrayList(wallet));
+        walletsel.getSelectionModel().selectFirst();
+        
+        wallet_cfg.write_config(clipath,walletname, rpcip, rpcuser, rpcpass, rpcport);
+        
+        cli_worker = new generic_command_cli_jna(clipath,rpcip,rpcuser,rpcpass,rpcport);
+        client_manager.add(cli_worker);
+           
+        wallet_name.add(walletname);
+        wallet_conn.add(cli_worker.get_url());
+           
+        walletselallowrem.setItems(observableArrayList(wallet));
+        walletselallowrem.getSelectionModel().selectFirst();
+              
+        client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
+        disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
+        immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
+        total.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.immature_balance);            
+                       
+        accountsel.setItems(observableArrayList(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_list_accounts())); 
+        accountsel.getSelectionModel().selectFirst();
+
+        hashsel.setItems(observableArrayList(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account(accountsel.getSelectionModel().getSelectedItem())));
+        hashsel.getSelectionModel().selectFirst();
+
+        totalaccount.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account().get(accountsel.getSelectionModel().getSelectedIndex())); 
+        valuetosend.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account ().get(accountsel.getSelectionModel().getSelectedIndex()));
+           
+        hashstr.setText(hashsel.getSelectionModel().getSelectedItem());
+            
+        hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
+
+        block_label = block_c = block_s = block_a = block_h = false;  
+        block_b_start = true;        
+    }
     
     
     @FXML
@@ -279,7 +379,7 @@ public class FXMLController implements Initializable {
         }
         else
         {
-            client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_send_from_to_address(accountsel.getSelectionModel().getSelectedItem(), hashtosend.getText(), new BigDecimal(valuetosend.getText())); 
+            client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_send_from_to_address(accountsel.getSelectionModel().getSelectedItem(), hashtosendvalue.getText(), new BigDecimal(valuetosend.getText())); 
         }
     }
     
@@ -362,52 +462,23 @@ public class FXMLController implements Initializable {
     @FXML
     private void HandlestartbuttonAction(ActionEvent event)
     {    
-        System.out.println("button event");       
-        
-      // if(!block_b_start)
-      // {
-           block_label = block_c = block_s = block_a = block_h = true;
-           
-           wallet.add(walletstart.getText());
-
-           walletsel.setItems(observableArrayList(wallet));
-           walletsel.getSelectionModel().selectFirst();
-                      
-           cli_worker = new generic_cli(rpcconnect.getText(),rpcuser.getText(),rpcpass.getText(),rpcport.getText());
-           client_manager.add(cli_worker);
-           
-           wallet_name.add(walletstart.getText());
-           wallet_conn.add(cli_worker.get_url());
-           
-           walletselallowrem.setItems(observableArrayList(wallet));
-           walletselallowrem.getSelectionModel().selectFirst();
-              
-           client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
-           disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
-           immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
-           total.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.immature_balance);            
-                       
-           accountsel.setItems(observableArrayList(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_list_accounts())); 
-           accountsel.getSelectionModel().selectFirst();
-
-           hashsel.setItems(observableArrayList(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account(accountsel.getSelectionModel().getSelectedItem())));
-           hashsel.getSelectionModel().selectFirst();
-
-           totalaccount.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account().get(accountsel.getSelectionModel().getSelectedIndex())); 
-           valuetosend.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account ().get(accountsel.getSelectionModel().getSelectedIndex()));
-           
-           hashstr.setText(hashsel.getSelectionModel().getSelectedItem());
+       // System.out.println("button event");       
             
-           hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
+      config_wallet_m(cliexec.getText(),walletstart.getText(),rpcconnect.getText(),rpcuser.getText(),rpcpass.getText(),rpcport.getText());
 
-           block_label = block_c = block_s = block_a = block_h = false;  
-           block_b_start = true;
-      // }
     }
     
     @FXML
-    private void handleButtonAction(ActionEvent event) {
-        System.out.println("You clicked me!");
+    private void HandleloadcfgbuttonAction(ActionEvent event)
+    {
+        if(wallet_cfg.read_config() > 0)
+        {
+            for(String aux : wallet_cfg.get_wallet_config())
+            {
+                String cfg_r[] = aux.split(":");
+                config_wallet_r(cfg_r[0],cfg_r[1],cfg_r[2],cfg_r[3],cfg_r[4],cfg_r[5]);
+            }
+        }
     }
     
     @Override
@@ -416,17 +487,17 @@ public class FXMLController implements Initializable {
         disponible.setText("0.00000000");
         immature.setText("0.00000000");
         total.setText("0.00000000");
-        
-        
-        
+                      
        // handleselectionwalletAction.getItems().removeAll(handleselectionwalletAction.getItems());
         walletsel.setItems(observableArrayList(wallet));
         walletselallowrem.setItems(observableArrayList(wallet));
         //walletsel.getSelectionModel().select("FLO"); 
         
         
-                    Timer timer = new Timer();
-                timer.scheduleAtFixedRate(new TimerTask() {
+                   
+        Timer timer = new Timer();
+        
+        timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
                         SwingUtilities.invokeLater(new Runnable() {
@@ -448,6 +519,6 @@ public class FXMLController implements Initializable {
                     }
                 }, 0, 2000);
         
-    }    
-      
+    }
+        
 }

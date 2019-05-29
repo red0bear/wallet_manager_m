@@ -5,14 +5,12 @@
  */
 package telegram;
 
-import generic_command_pack.generic_cli;
+import generic_command_pack.generic_command_cli_jna;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +36,7 @@ public class telegramwalletmessagehandler {
     private WorkerSendMessageTelegram telegraminfo = null;
     private Thread t_telegraminfo;
       
-    private generic_cli command;
+    private generic_command_cli_jna command;
     
     private String current_id = "";
     
@@ -53,7 +51,7 @@ public class telegramwalletmessagehandler {
 
     /**/
     private List<String> wallet_name;
-    private List<URL> wallet_conn;
+    private List<String> wallet_conn;
     
     
     private int global_counter = 0;
@@ -114,7 +112,7 @@ public class telegramwalletmessagehandler {
     }
     
     /*RPC WORK*/
-    public void set_url_wallet(List<String> wallet_name, List<URL> wallet_conn)
+    public void set_url_wallet(List<String> wallet_name, List<String> wallet_conn)
     {
         this.wallet_name = wallet_name;
         this.wallet_conn = wallet_conn;
@@ -184,11 +182,11 @@ public class telegramwalletmessagehandler {
             {
                 user_control.get(index_user).add_permission(wallet);
                 
-                if(new generic_cli(wallet_conn.get(index_wallet)).generic_get_address_by_account(user_control.get(index_user).get_user_id()).size() > 0)
+                if(new generic_command_cli_jna(wallet_conn.get(index_wallet)).generic_get_address_by_account(user_control.get(index_user).get_user_id()).size() > 0)
                 {}
                 else
                 {
-                    new generic_cli(wallet_conn.get(index_wallet)).generic_new_account(user_control.get(index_user).get_user_id());
+                    new generic_command_cli_jna(wallet_conn.get(index_wallet)).generic_new_account(user_control.get(index_user).get_user_id());
                 }
             }
         }
@@ -280,7 +278,7 @@ public class telegramwalletmessagehandler {
                /*WALLET COMMAND*/
                case 1:
                    
-                   command  = new generic_cli(wallet_conn.get(type_wallet));
+                   command  = new generic_command_cli_jna(wallet_conn.get(type_wallet));
                    
                    if(aux.compareTo("!help") == 0)
                    {
@@ -351,7 +349,10 @@ public class telegramwalletmessagehandler {
                        }
                    }
                    else if(aux.compareTo("!send") == 0)
-                   {                        
+                   {      
+                       if(values.length < 4)
+                           return;
+                       
                        String result = command.generic_send_from_to_address(current_id, values[2], new BigDecimal(values[3]));
                        message_t_sent(wallet_name.get(type_wallet));
                        message_t_sent("txid result");

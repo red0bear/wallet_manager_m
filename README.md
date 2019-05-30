@@ -20,6 +20,19 @@ java -jar wallet_manager_m-1.0.jar
 
 ```
 
+# native client access via jna
+
+For using client access is necessary compile terminal C++ access to execute command to return a string json with info included.Files are in :
+
+https://github.com/red0bear/wallet_manager_m/tree/master/command_cli
+
+Must be compiled in shared object where java can access it via Java Native Access. In java you need to point the correct place      like in /client where is necessary wallet-cli.     
+
+```
+Native.load((Platform.isLinux()? "/command_cli/clientcmd.so" : "c"),
+
+```
+
 # wallet deamon
 
 Wallet deamon command using old rpc standart

@@ -210,7 +210,7 @@ public class generic_command_cli_jna {
     
     public String generic_send_from_to_address(String account,String toaddress,BigDecimal value)
     {
-       String info = CLibrary.INSTANCE.cmdtst(command_issue + " sendfrom " + " \"" + account + " \"" + " \"" + toaddress + " \" " + value.toPlainString()).getString(0);
+       String info = CLibrary.INSTANCE.cmdtst(command_issue + " sendfrom " + " \"" + account + "\"" + " \"" + toaddress + "\" " + value.toPlainString()).getString(0);
         
        return info;
     }

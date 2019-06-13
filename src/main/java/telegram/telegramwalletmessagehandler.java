@@ -22,6 +22,8 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
@@ -48,7 +50,7 @@ public class telegramwalletmessagehandler {
     
     
     private List<userinfocontrol> user_control;
-
+    private userinfocontrol selected ;
     /**/
     private List<String> wallet_name;
     private List<String> wallet_conn;
@@ -241,129 +243,307 @@ public class telegramwalletmessagehandler {
         
         return false;
     }
- 
-    private void handle_commands_wallet(String value)
-    {
-       int state_walker=0;
-       int type_wallet=0;
-       int id_select=0;
     
-       String values[] = value.split(" ");
+    private void select_wallet()
+    {
+        String[][] keyboardWallet = selected.get_wallet_allowed();
+        sendReplyKeyboard(Long.valueOf(current_id), "CHOOSE WALLET", keyboardWallet, true);
+    }
+    
+    private void command_wallet_telegram()
+    {
+        String[][] commands = {{"balance"},
+                              {"listaddrstr"},
+                              {"getnewaddrstr"},
+                             /// {"generateaddrqrcode"},
+                              {"send"},
+                              {"back"}};
+               
+        sendReplyKeyboard(Long.valueOf(current_id), "ISSUE COMMAND", commands, true);    
+    }
+    
+    
+    private String balance_label_find()
+    {
+        int id_select=0;
+                
+        for(String account : command.generic_list_accounts())
+        {
+            if(account.compareTo(current_id) == 0)
+            {
+                break;
+            }else
+            {
+                id_select++;
+            }
+        } 
+        
+        return command.generic_get_address_by_account().get(id_select);
+    }
        
-       if(!check_permission(values[0]))
+    private void message_handle(String value)
+    {        
+       int type_wallet=0;
+       
+       if(value.compareTo("Reset") == 0)
        {
-           return;
-       }
-       
-       
-       for(String aux:values)
-       {
-           switch(state_walker)
-           {
-               /*SEE WALLET TO ISSUE COMMAND*/
-               case 0:
-                   for(String aux_name:wallet_name)
-                   {
-                       if(aux_name.compareTo(aux) == 0)
-                       {
-                           state_walker =1;
-                           break;
-                       }else
-                       {
-                           type_wallet++;
-                       }
-                   }
-                   
-               break;
-               /*WALLET COMMAND*/
-               case 1:
-                   
-                   command  = new generic_command_cli_jna(wallet_conn.get(type_wallet));
-                   
-                   if(aux.compareTo("!help") == 0)
-                   {
-                       message_t_sent(help());
-                       return;
-                   }
-                   else if(aux.compareTo("!balance") == 0)
-                   {
+            selected.set_wallet_hash("");
+            selected.set_wallet("");
+            selected.update_state(0); 
+       }    
+          
+        switch(selected.get_state())
+        {
+            case 0:
+                
+                String[][] keyboardText = {{"CELL PHONE"},{"CMD LINE"}};
+                sendReplyKeyboard(Long.valueOf(current_id), "CHOOSE",keyboardText, true);   
+                selected.update_state(1);
+                
+            break;
+            case 1:
+                
+                if(value.toUpperCase().compareTo("CELL PHONE") == 0)
+                {
+                    select_wallet();
+                    selected.update_state(2);                  
+                }
+                else if(value.toUpperCase().compareTo("CMD LINE") == 0)
+                {
+                   selected.update_state(9);
+                }
+            break;
+            case 2:
+                
+                selected.set_wallet(value);      
+                command_wallet_telegram();  
+                selected.update_state(3);
+                
+            break;
+            case 3:
+
+                for(String aux_name:wallet_name)
+                {
+                     if(selected.get_wallet().compareTo(aux_name) == 0)
+                     {
+                        // state_walker =1;
+                         break;
+                     }else
+                     {
+                        type_wallet++;
+                     }
+                }
+
+                command  = new generic_command_cli_jna(wallet_conn.get(type_wallet));
+
+               if(value.toLowerCase().compareTo("balance") == 0)
+               {      
+                    message_t_sent(wallet_name.get(type_wallet));
+                    message_t_sent("Balance is : " + balance_label_find());
+
+                    command_wallet_telegram();  
+                    selected.update_state(3);                                    
+               }
+               else if(value.toLowerCase().compareTo("listaddrstr") == 0)
+               {                          
+                    String[][] addrs = selected.get_List_allowed(command.generic_get_address_by_account(current_id));
+                    sendReplyKeyboard(Long.valueOf(current_id), "Listing address from wallet " + wallet_name.get(type_wallet), addrs, true);
+                            
+                    ///command_wallet_telegram();  
+                    selected.update_state(5); 
+                }
+                else if(value.toLowerCase().compareTo("getnewaddrstr") == 0)
+                {
+                    String value_r = command.generic_new_account_g(current_id);
+                    
+                    message_t_sent(wallet_name.get(type_wallet));
+                    message_t_sent(value_r);
+                    message_t_sent_image(value_r, command.get_qr_code(value_r));
+                    
+                    command_wallet_telegram();  
+                    selected.update_state(3);
+                           
+                }
+                else if(value.toLowerCase().compareTo("send") == 0)
+                {
+                    message_t_sent("Please enter the address " + wallet_name.get(type_wallet));
+                    selected.update_state(6);                                            
+                }
+                else if(value.toLowerCase().compareTo("back") == 0)
+                {
+                    
+                    select_wallet();
+                    selected.set_wallet_hash("");
+                    selected.set_wallet("");
+                    //selected.update_sub_state(0);
+                    selected.update_state(2);  
                      
+                }          
+               
+               type_wallet = 0;
+
+            break;
+            case 5:
+                                    
+                command_wallet_telegram();  
+                selected.set_wallet_hash(value);
+                message_t_sent(selected.get_wallet_hash());
+                message_t_sent_image(selected.get_wallet_hash(), command.get_qr_code(selected.get_wallet_hash()));                
+                selected.update_state(3);
+                
+            break;
+            case 6:
+               
+               message_t_sent("Please enter the value " + balance_label_find());
+               selected.set_hash_to_send(value);
+               selected.update_state(7);
+               
+            break;
+            case 7:
+               
+               //message_t_sent("Please enter the value " + command.generic_get_address_by_account().get(id_select));
+               //selected.set_hash_to_send(value);
+               
+                if(value.toLowerCase().compareTo("cancel") == 0)
+                {
+                    select_wallet();
+                    selected.set_wallet_hash("");
+                    selected.set_wallet("");
+                    //selected.update_sub_state(0);
+                    selected.update_state(2);  
+                }
+                else if(new BigDecimal(value).compareTo(new BigDecimal(balance_label_find())) <= 0 )
+                {    
+                    String result = command.generic_send_from_to_address(current_id, selected.get_hash_to_send(), new BigDecimal(value));
+                    message_t_sent(wallet_name.get(type_wallet));
+                    message_t_sent("txid result");
+                    message_t_sent(result);
+                    select_wallet();
+                    selected.update_state(2);
+                }
+                else
+                {                       
+                    message_t_sent("Please enter the value " + balance_label_find());
+                    selected.update_state(7);
+                }
+                
+            break;
+            case 9:
+
+                int id_select=0;
+                      
+                String values[] = value.split(" ");
+       
+       
+                if(!check_permission(values[0].toUpperCase()))
+                {
+                    return;
+                }
+                
+                for(String aux_name:wallet_name)
+                {
+                     if(selected.list_perm().get(type_wallet).compareTo(aux_name) == 0)
+                     {
+                        // state_walker =1;
+                         break;
+                     }else
+                     {
+                        type_wallet++;
+                     }
+                }
+                
+                 /*wallet command execute*/
+                 
+                 command  = new generic_command_cli_jna(wallet_conn.get(type_wallet));
+
+                 if(values[1].toLowerCase().compareTo("!help") == 0)
+                 {
+                     message_t_sent(help());
+                     return;
+
+                 }
+                 else if(values[1].toLowerCase().compareTo("!balance") == 0) 
+                 {
+
                      for(String account : command.generic_list_accounts())
                      {
-                        if(account.compareTo(current_id) == 0)
-                        {
+                         if(account.compareTo(current_id) == 0)
+                         {
                              message_t_sent(wallet_name.get(type_wallet));
                              message_t_sent("Balance is : " + command.generic_get_address_by_account().get(id_select));
                              return;
-                        }else
-                        {
-                           id_select++;
-                        }
+                         }else
+                         {
+                             id_select++;
+                         }
                      }
-                   }
-                   else if(aux.compareTo("!listaddrstr") == 0)
-                   {
-                       message_t_sent(wallet_name.get(type_wallet));
-                                             
-                       for(String aux_list : command.generic_get_address_by_account(current_id))
-                       {
-                           message_t_sent(aux_list);
-                       }
-                       
-                       return;
-                   }
-                   else if(aux.compareTo("!getnewaddrstr") == 0)
-                   {
-                       message_t_sent(wallet_name.get(type_wallet));
-                       message_t_sent(command.generic_new_account_g(current_id));
-                       return;
-                   }
-                   else if(aux.compareTo("!generateaddrqrcode") == 0)
-                   {
-                       if(values.length < 3)
-                       {
-                           message_t_sent(wallet_name.get(type_wallet) + " something is missing .... ");
-                           return;
-                       }
-                        
-                       /**/
-                           
-                       boolean found_addr = false;
-                       for(String aux_list : command.generic_get_address_by_account(current_id))
-                       {
-                           if(aux_list.compareTo(values[2]) == 0)
-                           {
-                               found_addr = true;
-                           }
-                       }
-                       
-                       if(found_addr)
-                       {    
-                            message_t_sent(wallet_name.get(type_wallet));
-                            message_t_sent_image(values[2], command.get_qr_code(values[2]));
-                            return;
-                       }else
-                       {
-                           message_t_sent(wallet_name.get(type_wallet) + " address not found .... ");
-                           return;
-                       }
-                   }
-                   else if(aux.compareTo("!send") == 0)
-                   {      
-                       if(values.length < 4)
-                           return;
-                       
-                       String result = command.generic_send_from_to_address(current_id, values[2], new BigDecimal(values[3]));
-                       message_t_sent(wallet_name.get(type_wallet));
-                       message_t_sent("txid result");
-                       message_t_sent(result);
-                       return;
+                 }
+                 else if(values[1].toLowerCase().compareTo("!listaddrstr") == 0)
+                 {
+                     message_t_sent(wallet_name.get(type_wallet));
+
+                     for(String aux_list : command.generic_get_address_by_account(current_id))
+                     {
+                         message_t_sent(aux_list);
+                     }
+
+                     return;
+                 }
+                 else if(values[1].toLowerCase().compareTo("!getnewaddrstr") == 0)
+                 {
+                     message_t_sent(wallet_name.get(type_wallet));
+                     message_t_sent(command.generic_new_account_g(current_id));
+                     return;
+                 }
+                 else if(values[1].toLowerCase().compareTo("!generateaddrqrcode") == 0)
+                 {
+                    if(values.length < 3)
+                    {
+                        message_t_sent(wallet_name.get(type_wallet) + " something is missing .... ");
+                        return;
                     }
-               break;          
-           }
-       
-       }
-       
+
+
+
+                    boolean found_addr = false;
+
+                    for(String aux_list : command.generic_get_address_by_account(current_id))
+                    {
+                         if(aux_list.compareTo(values[2]) == 0)
+                         {
+                             found_addr = true;
+                         }
+                     }
+
+                     if(found_addr)
+                     {    
+                         message_t_sent(wallet_name.get(type_wallet));
+                         message_t_sent_image(values[2], command.get_qr_code(values[2]));
+                         return;
+                     }else
+                     {
+                         message_t_sent(wallet_name.get(type_wallet) + " address not found .... ");
+                         return;
+                     }
+
+                 }
+                 else if(values[1].toLowerCase().compareTo("!send") == 0) 
+                 {      
+
+                     if(values.length < 4)
+                          return;
+
+                     String result = command.generic_send_from_to_address(current_id, values[2], new BigDecimal(values[3]));
+                     message_t_sent(wallet_name.get(type_wallet));
+                     message_t_sent("txid result");
+                     message_t_sent(result);
+                     return;            
+                 }        
+                
+            break;
+        
+        }
+        
     }
     
     /*TELEGRAM*/
@@ -405,15 +585,39 @@ public class telegramwalletmessagehandler {
         }
         
             
-    }     
+    } 
+
+    public void sendReplyKeyboard(long chatId, String message, String[][] keyboardText, boolean oneTimeKeyboard) {
+        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup(); // return null;
+        keyboard.setOneTimeKeyboard(oneTimeKeyboard);
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+        
+        for (String[] rows : keyboardText) {
+            KeyboardRow keyboardRow = new KeyboardRow();
+            for (String row : rows) {
+                keyboardRow.add(row);
+            }
+            keyboardRows.add(keyboardRow);
+        }
+        
+        keyboard.setKeyboard(keyboardRows);
+        SendMessage sendMessage = new SendMessage(chatId, message);
+        sendMessage.setReplyMarkup(keyboard);
+        
+        try {
+         messager.execute(sendMessage); 
+        } catch (TelegramApiException e) {
+         // e.printStackTrace();
+        }
+        //return execute(sendMessage);
+    }    
         
     class WorkerSendMessageTelegram implements Runnable
     {
     
         @Override
         public void run() 
-        {
-  
+        {  
             while(runable_auto)
             {   
 
@@ -425,14 +629,17 @@ public class telegramwalletmessagehandler {
                 {}
                 else
                 {
-                   //System.out.println(received);
+                   System.out.println(received);
 
                     for(userinfocontrol aux : user_control)
                     {
                         if(aux.get_user_id().compareTo(received.split(":")[1]) == 0)
                         {
                             current_id = received.split(":")[1];
-                            handle_commands_wallet(received.split(":")[0]);
+                            selected = aux;
+                            
+                            message_handle(received.split(":")[0]);
+
                         }
                     }
                 }

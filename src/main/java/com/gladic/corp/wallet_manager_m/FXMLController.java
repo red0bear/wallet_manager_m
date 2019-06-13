@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
+import javafx.application.Platform;
 import static javafx.collections.FXCollections.observableArrayList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -461,11 +462,8 @@ public class FXMLController implements Initializable {
     
     @FXML
     private void HandlestartbuttonAction(ActionEvent event)
-    {    
-       // System.out.println("button event");       
-            
+    {               
       config_wallet_m(cliexec.getText(),walletstart.getText(),rpcconnect.getText(),rpcuser.getText(),rpcpass.getText(),rpcport.getText());
-
     }
     
     @FXML
@@ -488,37 +486,33 @@ public class FXMLController implements Initializable {
         immature.setText("0.00000000");
         total.setText("0.00000000");
                       
-       // handleselectionwalletAction.getItems().removeAll(handleselectionwalletAction.getItems());
         walletsel.setItems(observableArrayList(wallet));
         walletselallowrem.setItems(observableArrayList(wallet));
-        //walletsel.getSelectionModel().select("FLO"); 
         
-        
-                   
         Timer timer = new Timer();
-        
         timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {  
+                Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                    if(block_s)
-                                    {}
-                                    else if(block_label)
-                                    {}
-                                    else 
-                                    {
-                                        client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
-                                        disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
-                                        immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
-                                        total.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.immature_balance);
-                                    }
-                            }
-                        });
+                                        if(block_s)
+                                        {}
+                                        else if(block_label)
+                                        {}
+                                        else 
+                                        {             
+                                            String result = new BigDecimal(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.immature_balance).add(new BigDecimal(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance)).toPlainString();
+                                            client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
+                                            disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
+                                            immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
+                                            total.setText(result);
+                                        }
                     }
-                }, 0, 2000);
+                });
+            }        
         
+        }, 0, 1000);
+                
     }
         
 }

@@ -47,7 +47,7 @@ public class Telegrammessage extends TelegramLongPollingBot {
         else
             return message.remove(0);
     }
-   
+       
     
     public void onUpdateReceived(Update update) {
         // TODO

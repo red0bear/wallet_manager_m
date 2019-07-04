@@ -46,25 +46,22 @@ public class telegramwalletmessagehandler {
     
     private List<String> messages;
     
-    private String message;
-    
-    
     private List<userinfocontrol> user_control;
     private userinfocontrol selected ;
+    
     /**/
     private List<String> wallet_name;
-    private List<String> wallet_conn;
+    private List<String> wallet_conn;    
     
+    private List<generic_command_cli_jna> client_manager;
     
-    private int global_counter = 0;
-    
-     
-    public telegramwalletmessagehandler(String id, String user,TextArea text)
+    public telegramwalletmessagehandler(String id, String user,TextArea text, List<generic_command_cli_jna> client_manager)
     {        
         
         ApiContextInitializer.init();
         messager = new Telegrammessage(id,user,text);
         telegramBotsApi = new TelegramBotsApi();
+        this.client_manager = client_manager;
         
         try {
             telegramBotsApi.registerBot(messager);
@@ -184,11 +181,18 @@ public class telegramwalletmessagehandler {
             {
                 user_control.get(index_user).add_permission(wallet);
                 
-                if(new generic_command_cli_jna(wallet_conn.get(index_wallet)).generic_get_address_by_account(user_control.get(index_user).get_user_id()).size() > 0)
+                generic_command_cli_jna cmd = new generic_command_cli_jna(wallet_conn.get(index_wallet),client_manager.get(index_wallet).is_deprecated());
+                
+                if(client_manager.get(index_wallet).is_deprecated())
+                {}    
+                else
+                    cmd.direct_set_wallet(user_control.get(index_user).get_user_id());
+                                
+                if(cmd.generic_get_address_by_account(user_control.get(index_user).get_user_id()).size() > 0)
                 {}
                 else
                 {
-                    new generic_command_cli_jna(wallet_conn.get(index_wallet)).generic_new_account(user_control.get(index_user).get_user_id());
+                    cmd.generic_new_account(user_control.get(index_user).get_user_id());
                 }
             }
         }
@@ -285,7 +289,7 @@ public class telegramwalletmessagehandler {
     {        
        int type_wallet=0;
        
-       if(value.compareTo("Reset") == 0)
+       if(value.toLowerCase().compareTo("reset") == 0)
        {
             selected.set_wallet_hash("");
             selected.set_wallet("");
@@ -322,9 +326,11 @@ public class telegramwalletmessagehandler {
             break;
             case 3:
 
+                type_wallet = 0;
+                
                 for(String aux_name:wallet_name)
                 {
-                     if(selected.get_wallet().compareTo(aux_name) == 0)
+                     if(selected.get_wallet().compareTo(aux_name.toUpperCase()) == 0)
                      {
                         // state_walker =1;
                          break;
@@ -334,8 +340,13 @@ public class telegramwalletmessagehandler {
                      }
                 }
 
-                command  = new generic_command_cli_jna(wallet_conn.get(type_wallet));
+                command  = new generic_command_cli_jna(wallet_conn.get(type_wallet),client_manager.get(type_wallet).is_deprecated());
 
+                if(client_manager.get(type_wallet).is_deprecated())
+                {}    
+                else
+                    command.direct_set_wallet(selected.get_user_id());
+                
                if(value.toLowerCase().compareTo("balance") == 0)
                {      
                     message_t_sent(wallet_name.get(type_wallet));
@@ -380,7 +391,6 @@ public class telegramwalletmessagehandler {
                      
                 }          
                
-               type_wallet = 0;
 
             break;
             case 5:
@@ -431,9 +441,9 @@ public class telegramwalletmessagehandler {
             case 9:
 
                 int id_select=0;
-                      
+                type_wallet=0;
+                
                 String values[] = value.split(" ");
-       
        
                 if(!check_permission(values[0].toUpperCase()))
                 {
@@ -442,7 +452,7 @@ public class telegramwalletmessagehandler {
                 
                 for(String aux_name:wallet_name)
                 {
-                     if(selected.list_perm().get(type_wallet).compareTo(aux_name) == 0)
+                     if(values[0].toUpperCase().compareTo(aux_name) == 0)
                      {
                         // state_walker =1;
                          break;
@@ -454,7 +464,7 @@ public class telegramwalletmessagehandler {
                 
                  /*wallet command execute*/
                  
-                 command  = new generic_command_cli_jna(wallet_conn.get(type_wallet));
+                 command  = new generic_command_cli_jna(wallet_conn.get(type_wallet),client_manager.get(type_wallet).is_deprecated());
 
                  if(values[1].toLowerCase().compareTo("!help") == 0)
                  {
@@ -638,8 +648,12 @@ public class telegramwalletmessagehandler {
                             current_id = received.split(":")[1];
                             selected = aux;
                             
-                            message_handle(received.split(":")[0]);
-
+                            message_handle(received.split(":")[0].replace(":", "").trim());
+                            
+                            /*
+                            handle_buttons(received.split(":")[0]);
+                            handle_commands_wallet(received.split(":")[0]);
+                            */
                         }
                     }
                 }

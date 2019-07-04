@@ -19,6 +19,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
@@ -106,6 +107,10 @@ public class FXMLController implements Initializable {
     @FXML
     private TextField newaccountname;
     
+    @FXML
+    private RadioButton oldcommad;
+    
+    /**/
     
     @FXML
     private TextField hashtosendvalue;
@@ -154,7 +159,7 @@ public class FXMLController implements Initializable {
     @FXML
     private Button allow;
 
-    private void config_wallet_r(String clipath ,String walletname,String rpcip,String rpcuser,String rpcpass,String rpcport)
+    private void config_wallet_r(String clipath ,String walletname,String rpcip,String rpcuser,String rpcpass,String rpcport,boolean deprecated)
     {
         System.out.println("button event");       
 
@@ -165,7 +170,15 @@ public class FXMLController implements Initializable {
         walletsel.setItems(observableArrayList(wallet));
         walletsel.getSelectionModel().selectFirst();
         
-        cli_worker = new generic_command_cli_jna(clipath,rpcip,rpcuser,rpcpass,rpcport);
+        cli_worker = new generic_command_cli_jna(clipath,rpcip,rpcuser,rpcpass,rpcport,deprecated);
+        
+        if(deprecated)
+        {
+        
+        }
+        else
+            cli_worker.load_wallets(wallet_cfg.get_wallet_config_users());
+        
         client_manager.add(cli_worker);
            
         wallet_name.add(walletname);
@@ -198,7 +211,7 @@ public class FXMLController implements Initializable {
     
     
     
-    private void config_wallet_m(String clipath , String walletname,String rpcip,String rpcuser,String rpcpass,String rpcport)
+    private void config_wallet_m(String clipath , String walletname,String rpcip,String rpcuser,String rpcpass,String rpcport,boolean deprecated)
     {
         System.out.println("button event");       
 
@@ -209,9 +222,9 @@ public class FXMLController implements Initializable {
         walletsel.setItems(observableArrayList(wallet));
         walletsel.getSelectionModel().selectFirst();
         
-        wallet_cfg.write_config(clipath,walletname, rpcip, rpcuser, rpcpass, rpcport);
+        wallet_cfg.write_config(clipath,walletname, rpcip, rpcuser, rpcpass, rpcport,deprecated);
         
-        cli_worker = new generic_command_cli_jna(clipath,rpcip,rpcuser,rpcpass,rpcport);
+        cli_worker = new generic_command_cli_jna(clipath,rpcip,rpcuser,rpcpass,rpcport,deprecated);
         client_manager.add(cli_worker);
            
         wallet_name.add(walletname);
@@ -258,7 +271,12 @@ public class FXMLController implements Initializable {
         userselect.getSelectionModel().selectFirst();
         
         client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_new_account(newaccountname.getText());
-            
+        
+        if(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).is_deprecated())
+        {}
+        else
+         client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).set_id_wallet(accountsel.getSelectionModel().getSelectedIndex());
+                          
         client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
         disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
         immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
@@ -275,7 +293,7 @@ public class FXMLController implements Initializable {
         hashstr.setText(hashsel.getSelectionModel().getSelectedItem());
 
         hashqrcode.setImage(SwingFXUtils.toFXImage(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_qr_code(hashsel.getSelectionModel().getSelectedItem()),null));
-
+       
         block_s = block_a = block_h = false;
         block_telegram_a = false;
     }
@@ -323,7 +341,7 @@ public class FXMLController implements Initializable {
     @FXML
     private void HandlestartbotconfigAction(ActionEvent event)
     {
-        handler_msg = new telegramwalletmessagehandler(botusername.getText(),bottokenname.getText(),logarea);
+        handler_msg = new telegramwalletmessagehandler(botusername.getText(),bottokenname.getText(),logarea,client_manager);
         handler_msg.set_url_wallet(wallet_name, wallet_conn);
         handler_msg.StartIpMachine();
     }
@@ -332,11 +350,14 @@ public class FXMLController implements Initializable {
     @FXML
     private void HandlerefreshvalueAction(ActionEvent event)
     {
+        block_label = block_s = block_a = block_h = true;
         if(client_manager.isEmpty())
         {
         }
         else
             valuetosend.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_address_by_account ().get(accountsel.getSelectionModel().getSelectedIndex()));
+        
+        block_label = block_s = block_a = block_h = false;
     }
      
     @FXML
@@ -393,6 +414,11 @@ public class FXMLController implements Initializable {
         {
            block_label = block_s = block_a = block_h = true;
 
+            if(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).is_deprecated())
+            {}
+            else
+                client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).set_id_wallet(accountsel.getSelectionModel().getSelectedIndex());
+                    
             client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).generic_get_wallet_info();
             disponible.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.balance);
             immature.setText(client_manager.get(walletsel.getSelectionModel().getSelectedIndex()).get_walletinfo.unconfirmed_balance);
@@ -462,19 +488,35 @@ public class FXMLController implements Initializable {
     
     @FXML
     private void HandlestartbuttonAction(ActionEvent event)
-    {               
-      config_wallet_m(cliexec.getText(),walletstart.getText(),rpcconnect.getText(),rpcuser.getText(),rpcpass.getText(),rpcport.getText());
+    {    
+       // System.out.println("button event");       
+            
+      config_wallet_m(cliexec.getText(),walletstart.getText(),rpcconnect.getText(),rpcuser.getText(),rpcpass.getText(),rpcport.getText(),oldcommad.isSelected());
+
     }
     
     @FXML
     private void HandleloadcfgbuttonAction(ActionEvent event)
     {
+        wallet_cfg.read_config_wallets();
+        boolean localdepre = true;
+              
         if(wallet_cfg.read_config() > 0)
         {
             for(String aux : wallet_cfg.get_wallet_config())
             {
-                String cfg_r[] = aux.split(":");
-                config_wallet_r(cfg_r[0],cfg_r[1],cfg_r[2],cfg_r[3],cfg_r[4],cfg_r[5]);
+                String cfg_r[] = aux.split(":"); 
+                        
+                if(cfg_r[6].compareTo("true") == 0)
+                {
+                    localdepre = true;
+                }
+                else
+                {
+                    localdepre = false;
+                }
+                
+                config_wallet_r(cfg_r[0],cfg_r[1],cfg_r[2],cfg_r[3],cfg_r[4],cfg_r[5],localdepre);
             }
         }
     }
@@ -486,9 +528,11 @@ public class FXMLController implements Initializable {
         immature.setText("0.00000000");
         total.setText("0.00000000");
                       
+        //handleselectionwalletAction.getItems().removeAll(handleselectionwalletAction.getItems());
         walletsel.setItems(observableArrayList(wallet));
         walletselallowrem.setItems(observableArrayList(wallet));
-        
+        //walletsel.getSelectionModel().select("FLO"); 
+ 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {  
@@ -512,7 +556,7 @@ public class FXMLController implements Initializable {
             }        
         
         }, 0, 1000);
-                
-    }
+        
+    }    
         
 }

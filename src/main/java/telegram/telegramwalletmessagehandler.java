@@ -183,6 +183,8 @@ public class telegramwalletmessagehandler {
                 
                 generic_command_cli_jna cmd = new generic_command_cli_jna(wallet_conn.get(index_wallet),client_manager.get(index_wallet).is_deprecated());
                 
+                cmd.wallet_secondary_command(true);
+                
                 if(client_manager.get(index_wallet).is_deprecated())
                 {}    
                 else
@@ -287,14 +289,7 @@ public class telegramwalletmessagehandler {
        
     private void message_handle(String value)
     {        
-       int type_wallet=0;
-       
-       if(value.toLowerCase().compareTo("reset") == 0)
-       {
-            selected.set_wallet_hash("");
-            selected.set_wallet("");
-            selected.update_state(0); 
-       }    
+       int type_wallet=0; 
           
         switch(selected.get_state())
         {
@@ -342,6 +337,8 @@ public class telegramwalletmessagehandler {
 
                 command  = new generic_command_cli_jna(wallet_conn.get(type_wallet),client_manager.get(type_wallet).is_deprecated());
 
+                command.wallet_secondary_command(true);
+                
                 if(client_manager.get(type_wallet).is_deprecated())
                 {}    
                 else
@@ -414,15 +411,7 @@ public class telegramwalletmessagehandler {
                //message_t_sent("Please enter the value " + command.generic_get_address_by_account().get(id_select));
                //selected.set_hash_to_send(value);
                
-                if(value.toLowerCase().compareTo("cancel") == 0)
-                {
-                    select_wallet();
-                    selected.set_wallet_hash("");
-                    selected.set_wallet("");
-                    //selected.update_sub_state(0);
-                    selected.update_state(2);  
-                }
-                else if(new BigDecimal(value).compareTo(new BigDecimal(balance_label_find())) <= 0 )
+                if(new BigDecimal(value).compareTo(new BigDecimal(balance_label_find())) <= 0 )
                 {    
                     String result = command.generic_send_from_to_address(current_id, selected.get_hash_to_send(), new BigDecimal(value));
                     message_t_sent(wallet_name.get(type_wallet));
@@ -465,7 +454,8 @@ public class telegramwalletmessagehandler {
                  /*wallet command execute*/
                  
                  command  = new generic_command_cli_jna(wallet_conn.get(type_wallet),client_manager.get(type_wallet).is_deprecated());
-
+                 command.wallet_secondary_command(true);
+                 
                  if(values[1].toLowerCase().compareTo("!help") == 0)
                  {
                      message_t_sent(help());
@@ -621,18 +611,19 @@ public class telegramwalletmessagehandler {
         }
         //return execute(sendMessage);
     }    
-        
+            
     class WorkerSendMessageTelegram implements Runnable
     {
-    
+                    
         @Override
         public void run() 
         {  
+                      
             while(runable_auto)
             {   
 
                 String received = messager.message();
-                    
+                
                 if(received == null)
                 {}
                 else if(user_control.isEmpty())
@@ -648,12 +639,15 @@ public class telegramwalletmessagehandler {
                             current_id = received.split(":")[1];
                             selected = aux;
                             
-                            message_handle(received.split(":")[0].replace(":", "").trim());
-                            
-                            /*
-                            handle_buttons(received.split(":")[0]);
-                            handle_commands_wallet(received.split(":")[0]);
-                            */
+
+                            if(received.split(":")[0].toLowerCase().compareTo("reset") == 0)
+                            {
+                                 selected.set_wallet_hash("");
+                                 selected.set_wallet("");
+                                 selected.update_state(0); 
+                            } 
+
+                            message_handle(received.split(":")[0]);
                         }
                     }
                 }

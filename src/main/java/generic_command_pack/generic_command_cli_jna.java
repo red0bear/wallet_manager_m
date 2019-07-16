@@ -60,6 +60,8 @@ public class generic_command_cli_jna {
     private String id_wallet = "";
     private HashMap<Integer, String> wallets = new HashMap<>();
     
+    private boolean use_secondary_function;
+    
     public void set_id_wallet(int value)
     {
        id_wallet =  wallets.get(value);
@@ -107,10 +109,17 @@ public class generic_command_cli_jna {
     
     public interface CLibrary extends Library {
         CLibrary INSTANCE = (CLibrary)
-            Native.load((Platform.isLinux()? "/run/media/felipe/FFCOSTA/Projetos/projeto_programacao/command_cli/clientcmd.so" : "c"),
+            Native.load((Platform.isLinux()? "clientcmd.so" : "c"),
                                 CLibrary.class);
 
-       public Pointer cmdtst(String val);
+       public Pointer cmd_cli_exec(String val);
+       public Pointer cmd_cli_exec_s(String val);
+    }
+    
+    
+    public void wallet_secondary_command(boolean enabled)
+    {
+        use_secondary_function = enabled;
     }
     
     public String get_url()
@@ -125,18 +134,35 @@ public class generic_command_cli_jna {
         int counter = 0;
          
         for(String aux : values)
-        {
-            cmd = command_issue + " loadwallet" + " \"" + aux + "\" ";
-            info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(cmd).getString(0).replaceAll(System.lineSeparator(), "");
-            
-            if(info.compareTo("") == 0)
+        { 
+            if(use_secondary_function)
             {
-                info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + " createwallet" + " \"" + aux + "\" ").getString(0).replaceAll(System.lineSeparator(), "");
-            }
+                cmd = command_issue + " loadwallet" + " \"" + aux + "\" ";
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(cmd).getString(0).replaceAll(System.lineSeparator(), "");
 
-            wallets.put(counter , aux);
-            
-            counter++;
+                if(info.compareTo("") == 0)
+                {
+                    info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " createwallet" + " \"" + aux + "\" ").getString(0).replaceAll(System.lineSeparator(), "");
+                }
+
+                wallets.put(counter , aux);
+
+                counter++;            
+            }
+            else
+            {
+                cmd = command_issue + " loadwallet" + " \"" + aux + "\" ";
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(cmd).getString(0).replaceAll(System.lineSeparator(), "");
+
+                if(info.compareTo("") == 0)
+                {
+                    info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + " createwallet" + " \"" + aux + "\" ").getString(0).replaceAll(System.lineSeparator(), "");
+                }
+
+                wallets.put(counter , aux);
+
+                counter++;
+            }
             
         }
     }
@@ -145,18 +171,33 @@ public class generic_command_cli_jna {
     {
           
       String info = "";
-        
-      if(deprecated)
-      {
-           info = CLibrary.INSTANCE.cmdtst(command_issue + " getwalletinfo").getString(0);
-            
-      }else
-      {
-          generic_list_accounts();
-          String cmd = command_issue  + "-rpcwallet=" + id_wallet + " getwalletinfo";
-          info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(cmd).getString(0).replaceAll(System.lineSeparator(), "").trim();
-      }
       
+      if(use_secondary_function)
+      {
+            if(deprecated)
+            {
+                 info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " getwalletinfo").getString(0);
+
+            }else
+            {
+                generic_list_accounts();
+                String cmd = command_issue  + "-rpcwallet=" + id_wallet + " getwalletinfo";
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(cmd).getString(0).replaceAll(System.lineSeparator(), "").trim();
+            }      
+      }
+      else
+      {
+            if(deprecated)
+            {
+                 info = CLibrary.INSTANCE.cmd_cli_exec(command_issue + " getwalletinfo").getString(0);
+
+            }else
+            {
+                generic_list_accounts();
+                String cmd = command_issue  + "-rpcwallet=" + id_wallet + " getwalletinfo";
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(cmd).getString(0).replaceAll(System.lineSeparator(), "").trim();
+            }
+      }
        BigDecimal balance = new BigDecimal(get_data_json("balance", info)).setScale(8);
        BigDecimal immature_balance = new BigDecimal(get_data_json("immature_balance", info)).setScale(8);
        BigDecimal uncorfirmed_balance = new BigDecimal(get_data_json("unconfirmed_balance", info)).setScale(8);
@@ -171,76 +212,151 @@ public class generic_command_cli_jna {
     {
         
        String info = "";
-       
-       if(deprecated)
+       if(use_secondary_function)
        {
-           info = CLibrary.INSTANCE.cmdtst(command_issue + " listaccounts").getString(0);
-
-            //System.out.println(s);
-
-            //  
-            if(accounts == null)
-             {
-                 accounts = new ArrayList();
-             }
-             else
-             {
-                 accounts.clear();
-             }
-
-
-             if(values == null)
-             {
-                 values =  new ArrayList();
-             }
-             else
-             {
-                 values.clear();
-             }
-
-            //
-            for(Object aux : get_name_json(info))
+            if(deprecated)
             {
-                accounts.add((String) aux);
-                values.add(new BigDecimal(get_data_json((String) aux, info)).setScale(8).toPlainString());
-            }
+                info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " listaccounts").getString(0);
 
+                 //System.out.println(s);
+
+                 //  
+                 if(accounts == null)
+                  {
+                      accounts = new ArrayList();
+                  }
+                  else
+                  {
+                      accounts.clear();
+                  }
+
+
+                  if(values == null)
+                  {
+                      values =  new ArrayList();
+                  }
+                  else
+                  {
+                      values.clear();
+                  }
+
+                 //
+                 for(Object aux : get_name_json(info))
+                 {
+                     accounts.add((String) aux);
+                     values.add(new BigDecimal(get_data_json((String) aux, info)).setScale(8).toPlainString());
+                 }
+
+            }
+            else
+            {
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " listwallets").getString(0).replaceAll(System.lineSeparator(), "");
+
+                List<String> values_w = namewallets(info);
+
+                values_w.remove(0);
+
+                if(values_w.size() < 0)
+                {
+                   info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " createwallet" + " \"" + "account" + "\" ").getString(0).replaceAll(System.lineSeparator(), "");
+                   info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " listwallets").getString(0).replaceAll(System.lineSeparator(), "");
+                   values_w = namewallets(info);
+                   values_w.remove(0);        
+                }        
+
+               if(accounts == null)
+               {
+                    values   = new ArrayList();
+                    accounts = new ArrayList();
+               }
+               else
+               {
+                    accounts.clear();
+                    values.clear();
+               }
+
+
+               for(String aux : values_w)
+               {
+                   accounts.add(aux);
+                   values.add(generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + "-rpcwallet=" + aux  + " getbalance").getString(0).replaceAll(System.lineSeparator(), "").trim());
+               }   
+
+            }
        }
        else
        {
-           info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + " listwallets").getString(0).replaceAll(System.lineSeparator(), "");
-            
-           List<String> values_w = namewallets(info);
-        
-           values_w.remove(0);
-        
-           if(values_w.size() < 0)
-           {
-              info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + " createwallet" + " \"" + "account" + "\" ").getString(0).replaceAll(System.lineSeparator(), "");
-              info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + " listwallets").getString(0).replaceAll(System.lineSeparator(), "");
-              values_w = namewallets(info);
-              values_w.remove(0);        
-           }        
+            if(deprecated)
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec(command_issue + " listaccounts").getString(0);
 
-          if(accounts == null)
-          {
-               values   = new ArrayList();
-               accounts = new ArrayList();
-          }
-          else
-          {
-               accounts.clear();
-               values.clear();
-          }
+                 //System.out.println(s);
+
+                 //  
+                 if(accounts == null)
+                  {
+                      accounts = new ArrayList();
+                  }
+                  else
+                  {
+                      accounts.clear();
+                  }
 
 
-          for(String aux : values_w)
-          {
-              accounts.add(aux);
-              values.add(generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + "-rpcwallet=" + aux  + " getbalance").getString(0).replaceAll(System.lineSeparator(), "").trim());
-          }   
-      
+                  if(values == null)
+                  {
+                      values =  new ArrayList();
+                  }
+                  else
+                  {
+                      values.clear();
+                  }
+
+                 //
+                 for(Object aux : get_name_json(info))
+                 {
+                     accounts.add((String) aux);
+                     values.add(new BigDecimal(get_data_json((String) aux, info)).setScale(8).toPlainString());
+                 }
+
+            }
+            else
+            {
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + " listwallets").getString(0).replaceAll(System.lineSeparator(), "");
+
+                List<String> values_w = namewallets(info);
+
+                values_w.remove(0);
+
+                if(values_w.size() < 0)
+                {
+                   info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + " createwallet" + " \"" + "account" + "\" ").getString(0).replaceAll(System.lineSeparator(), "");
+                   info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + " listwallets").getString(0).replaceAll(System.lineSeparator(), "");
+                   values_w = namewallets(info);
+                   values_w.remove(0);        
+                }        
+
+               if(accounts == null)
+               {
+                    values   = new ArrayList();
+                    accounts = new ArrayList();
+               }
+               else
+               {
+                    accounts.clear();
+                    values.clear();
+               }
+
+
+               for(String aux : values_w)
+               {
+                   accounts.add(aux);
+                   values.add(generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + "-rpcwallet=" + aux  + " getbalance").getString(0).replaceAll(System.lineSeparator(), "").trim());
+               }   
+
+            }           
        }
+
        
        return accounts;
     }
@@ -258,36 +374,70 @@ public class generic_command_cli_jna {
             listdata.clear();
         }
         
-        
-        if(deprecated)
-        {    
-            info = CLibrary.INSTANCE.cmdtst(command_issue + " getaddressesbyaccount"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+        if(use_secondary_function)
+        {
+            if(deprecated)
+            {    
+                info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " getaddressesbyaccount"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
 
-            JSONArray values_addr = new JSONArray(info);
+                JSONArray values_addr = new JSONArray(info);
 
-            if (values_addr != null) 
-            { 
-                for (int i=0;i<values_addr.length();i++){ 
-                 listdata.add(values_addr.getString(i));
-                } 
-            }else
-            {
-                return null;
+                if (values_addr != null) 
+                { 
+                    for (int i=0;i<values_addr.length();i++){ 
+                     listdata.add(values_addr.getString(i));
+                    } 
+                }else
+                {
+                    return null;
+                }
             }
+            else
+            {
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + "-rpcwallet=" + id_wallet + " getaddressesbylabel"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+
+                if(info.compareTo("") == 0)
+                {
+                    generic_new_account(myaccount);
+                    info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + "-rpcwallet=" + id_wallet + " getaddressesbylabel"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+                }
+
+                listdata = namelabels(info);  
+            }
+        
         }
         else
         {
-            info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + "-rpcwallet=" + id_wallet + " getaddressesbylabel"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+            if(deprecated)
+            {    
+                info = CLibrary.INSTANCE.cmd_cli_exec(command_issue + " getaddressesbyaccount"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
 
-            if(info.compareTo("") == 0)
-            {
-                generic_new_account(myaccount);
-                info = generic_command_cli_jna.CLibrary.INSTANCE.cmdtst(command_issue + "-rpcwallet=" + id_wallet + " getaddressesbylabel"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+                JSONArray values_addr = new JSONArray(info);
+
+                if (values_addr != null) 
+                { 
+                    for (int i=0;i<values_addr.length();i++){ 
+                     listdata.add(values_addr.getString(i));
+                    } 
+                }else
+                {
+                    return null;
+                }
             }
-    
-            listdata = namelabels(info);  
+            else
+            {
+                info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + "-rpcwallet=" + id_wallet + " getaddressesbylabel"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+
+                if(info.compareTo("") == 0)
+                {
+                    generic_new_account(myaccount);
+                    info = generic_command_cli_jna.CLibrary.INSTANCE.cmd_cli_exec(command_issue + "-rpcwallet=" + id_wallet + " getaddressesbylabel"  + " \"" +myaccount + "\"").getString(0).replaceAll(System.lineSeparator(), "").trim();
+                }
+
+                listdata = namelabels(info);  
+            }
+
         }
-        
         
         return listdata;
     }
@@ -296,21 +446,42 @@ public class generic_command_cli_jna {
     {
         String info = "";
         
-       if(deprecated)
-       {
-            info = CLibrary.INSTANCE.cmdtst(command_issue + " sendfrom " + " \"" + account + "\"" + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
-       }
-       else
-       {
-            info = CLibrary.INSTANCE.cmdtst(command_issue + " -rpcwallet=" + id_wallet + " sendtoaddress " + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
-       }
-       
+        if(use_secondary_function)
+        {
+            if(deprecated)
+            {
+                 info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " sendfrom " + " \"" + account + "\"" + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+            }
+            else
+            {
+                 info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue + " -rpcwallet=" + id_wallet + " sendtoaddress " + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+            }
+        }
+        else{
+            if(deprecated)
+            {
+                 info = CLibrary.INSTANCE.cmd_cli_exec(command_issue + " sendfrom " + " \"" + account + "\"" + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+            }
+            else
+            {
+                 info = CLibrary.INSTANCE.cmd_cli_exec(command_issue + " -rpcwallet=" + id_wallet + " sendtoaddress " + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+            }
+        }
        return info;
     }
     
     public String generic_send_to_address(String toaddress,BigDecimal value)
     {       
-        String info = CLibrary.INSTANCE.cmdtst(command_issue  + " -rpcwallet=" +id_wallet + " sendtoaddress " + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+        String info = "";
+        
+        if(use_secondary_function)
+        {
+            info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue  + " -rpcwallet=" +id_wallet + " sendtoaddress " + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+        }
+        else
+        {
+            info = CLibrary.INSTANCE.cmd_cli_exec(command_issue  + " -rpcwallet=" +id_wallet + " sendtoaddress " + " \"" + toaddress + "\" " + value.toPlainString()).getString(0).replaceAll(System.lineSeparator(), "").trim();
+        }
         
         return  info;
     }
@@ -320,13 +491,27 @@ public class generic_command_cli_jna {
     {       
         String info = "";
         
-        if(deprecated)
+        if(use_secondary_function)
         {
-            info = CLibrary.INSTANCE.cmdtst(command_issue  + " getnewaddress " + myaccount).getString(0);
+            if(deprecated)
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue  + " getnewaddress " + myaccount).getString(0);
+            }
+            else
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue   + " -rpcwallet=" + id_wallet + " getnewaddress " + myaccount).getString(0);
+            }        
         }
         else
-        {
-            info = CLibrary.INSTANCE.cmdtst(command_issue   + " -rpcwallet=" + id_wallet + " getnewaddress " + myaccount).getString(0);
+        {        
+            if(deprecated)
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec(command_issue  + " getnewaddress " + myaccount).getString(0);
+            }
+            else
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec(command_issue   + " -rpcwallet=" + id_wallet + " getnewaddress " + myaccount).getString(0);
+            }
         }
     }
     
@@ -334,15 +519,28 @@ public class generic_command_cli_jna {
     {       
         String info = "";
         
-        if(deprecated)
+        if(use_secondary_function)
         {
-            info = CLibrary.INSTANCE.cmdtst(command_issue  + " getnewaddress " + myaccount).getString(0);
+            if(deprecated)
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue  + " getnewaddress " + myaccount).getString(0);
+            }
+            else
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec_s(command_issue   + " -rpcwallet=" + id_wallet + " getnewaddress " + myaccount).getString(0);
+            }        
         }
         else
         {
-            info = CLibrary.INSTANCE.cmdtst(command_issue   + " -rpcwallet=" + id_wallet + " getnewaddress " + myaccount).getString(0);
+            if(deprecated)
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec(command_issue  + " getnewaddress " + myaccount).getString(0);
+            }
+            else
+            {
+                info = CLibrary.INSTANCE.cmd_cli_exec(command_issue   + " -rpcwallet=" + id_wallet + " getnewaddress " + myaccount).getString(0);
+            }
         }
-        
         return info;
     } 
     

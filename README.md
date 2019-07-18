@@ -19,6 +19,16 @@ OpenJDK 64-Bit Server VM (build 11.0.2+7.2.12.1-x8664, mixed mode)
 java -jar wallet_manager_m-1.0.jar
 
 ```
+# file configuration
+
+To make more easy to configure wallets connection and new version wallet wallet creation
+
+config_wallet.cfg -> ./client/digibyte-cli:DIG:192.168.12.92:testuser:testpass:1000:false
+You can configure direct in UI interface or file if you wish. 
+
+config_wallet_users.cfg -> 9999999
+just a load wallets before start to use accounts
+
 
 # native client access via jna
 
@@ -49,8 +59,14 @@ Wallet deamon command using last rpc standart
  
 ```
 
-# create a telegram 
+# create a telegram bot
 
 This explain how to create bots and handle them --> https://core.telegram.org/bots#6-botfather
 
+# how wallet work
+
+Wallet have two ways to work:
+
+1. CELL PHONE MODE : You can use buttons instead keyboard
+2. CMD LINE MODE : you can use keyboard command to make some operations
  

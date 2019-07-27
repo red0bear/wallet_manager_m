@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,9 @@ public class telegramwalletmessagehandler {
     private List<String> wallet_conn;    
     
     private List<generic_command_cli_jna> client_manager;
+    
+    private ResourceBundle bundle_manager ;
+
     
     public telegramwalletmessagehandler(String id, String user,TextArea text, List<generic_command_cli_jna> client_manager)
     {        
@@ -253,19 +258,38 @@ public class telegramwalletmessagehandler {
     private void select_wallet()
     {
         String[][] keyboardWallet = selected.get_wallet_allowed();
-        sendReplyKeyboard(Long.valueOf(current_id), "CHOOSE WALLET", keyboardWallet, true);
+        sendReplyKeyboard(Long.valueOf(current_id), bundle_manager.getString("CHOOSE"), keyboardWallet, true);
     }
     
     private void command_wallet_telegram()
     {
-        String[][] commands = {{"balance"},
-                              {"listaddrstr"},
-                              {"getnewaddrstr"},
+        String[][] commands = {{bundle_manager.getString("balance")},
+                              {bundle_manager.getString("listaddrstr")},
+                              {bundle_manager.getString("getnewaddrstr")},
                              /// {"generateaddrqrcode"},
-                              {"send"},
-                              {"back"}};
+                              {bundle_manager.getString("send")},
+                              {bundle_manager.getString("back")}};
                
-        sendReplyKeyboard(Long.valueOf(current_id), "ISSUE COMMAND", commands, true);    
+        sendReplyKeyboard(Long.valueOf(current_id), bundle_manager.getString("COMMAND"), commands, true);    
+    }
+    
+    
+    private void set_lenguage(String value)
+    {
+        if(value.toUpperCase().compareTo("ENGLISH - US") == 0)
+        {
+            bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("en", "EN"));
+        }else if(value.toUpperCase().compareTo("PORTUGUES - PT") == 0)
+        {
+            bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("pt", "PT"));
+        }else if(value.toUpperCase().compareTo("РОССИЯ - RUS") == 0)
+        {
+            bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("rus", "RUS"));
+        }
+        else
+        {
+            bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("en", "EN"));
+        }
     }
     
     
@@ -293,33 +317,42 @@ public class telegramwalletmessagehandler {
           
         switch(selected.get_state())
         {
-            case 0:
+            case 0:        
                 
-                String[][] keyboardText = {{"CELL PHONE"},{"CMD LINE"}};
-                sendReplyKeyboard(Long.valueOf(current_id), "CHOOSE",keyboardText, true);   
+                String[][] lenguage = {{"ENGLISH - US"},{"PORTUGUES - PT"},{"РОССИЯ - RUS"}};
+                sendReplyKeyboard(Long.valueOf(current_id),"SELECT",lenguage, true);   
                 selected.update_state(1);
                 
             break;
             case 1:
                 
-                if(value.toUpperCase().compareTo("CELL PHONE") == 0)
+                set_lenguage(value);
+                        
+                String[][] keyboardText = {{bundle_manager.getString("CELL")},{bundle_manager.getString("CMD")}};
+                sendReplyKeyboard(Long.valueOf(current_id), bundle_manager.getString("CHOOSE") ,keyboardText, true);   
+                selected.update_state(2);
+                
+            break;
+            case 2:
+                
+                if(value.toUpperCase().compareTo(bundle_manager.getString("CELL")) == 0)
                 {
                     select_wallet();
-                    selected.update_state(2);                  
+                    selected.update_state(3);                  
                 }
-                else if(value.toUpperCase().compareTo("CMD LINE") == 0)
+                else if(value.toUpperCase().compareTo(bundle_manager.getString("CMD")) == 0)
                 {
                    selected.update_state(9);
                 }
             break;
-            case 2:
+            case 3:
                 
                 selected.set_wallet(value);      
                 command_wallet_telegram();  
-                selected.update_state(3);
+                selected.update_state(4);
                 
             break;
-            case 3:
+            case 4:
 
                 type_wallet = 0;
                 
@@ -344,23 +377,23 @@ public class telegramwalletmessagehandler {
                 else
                     command.direct_set_wallet(selected.get_user_id());
                 
-               if(value.toLowerCase().compareTo("balance") == 0)
+               if(value.toUpperCase().compareTo(bundle_manager.getString("balance")) == 0)
                {      
                     message_t_sent(wallet_name.get(type_wallet));
-                    message_t_sent("Balance is : " + balance_label_find());
+                    message_t_sent(bundle_manager.getString("ebalance") + " " + balance_label_find());
 
                     command_wallet_telegram();  
-                    selected.update_state(3);                                    
+                    selected.update_state(4);                                    
                }
-               else if(value.toLowerCase().compareTo("listaddrstr") == 0)
+               else if(value.toUpperCase().compareTo(bundle_manager.getString("listaddrstr")) == 0)
                {                          
                     String[][] addrs = selected.get_List_allowed(command.generic_get_address_by_account(current_id));
-                    sendReplyKeyboard(Long.valueOf(current_id), "Listing address from wallet " + wallet_name.get(type_wallet), addrs, true);
+                    sendReplyKeyboard(Long.valueOf(current_id), bundle_manager.getString("mlist") + " " + wallet_name.get(type_wallet), addrs, true);
                             
                     ///command_wallet_telegram();  
                     selected.update_state(5); 
                 }
-                else if(value.toLowerCase().compareTo("getnewaddrstr") == 0)
+                else if(value.toUpperCase().compareTo(bundle_manager.getString("getnewaddrstr")) == 0)
                 {
                     String value_r = command.generic_new_account_g(current_id);
                     
@@ -369,22 +402,22 @@ public class telegramwalletmessagehandler {
                     message_t_sent_image(value_r, command.get_qr_code(value_r));
                     
                     command_wallet_telegram();  
-                    selected.update_state(3);
+                    selected.update_state(4);
                            
                 }
-                else if(value.toLowerCase().compareTo("send") == 0)
+                else if(value.toUpperCase().compareTo(bundle_manager.getString("send")) == 0)
                 {
-                    message_t_sent("Please enter the address " + wallet_name.get(type_wallet));
+                    message_t_sent(bundle_manager.getString("maddr") + " " + wallet_name.get(type_wallet));
                     selected.update_state(6);                                            
                 }
-                else if(value.toLowerCase().compareTo("back") == 0)
+                else if(value.toUpperCase().compareTo(bundle_manager.getString("back")) == 0)
                 {
                     
                     select_wallet();
                     selected.set_wallet_hash("");
                     selected.set_wallet("");
                     //selected.update_sub_state(0);
-                    selected.update_state(2);  
+                    selected.update_state(3);  
                      
                 }          
                
@@ -396,12 +429,12 @@ public class telegramwalletmessagehandler {
                 selected.set_wallet_hash(value);
                 message_t_sent(selected.get_wallet_hash());
                 message_t_sent_image(selected.get_wallet_hash(), command.get_qr_code(selected.get_wallet_hash()));                
-                selected.update_state(3);
+                selected.update_state(4);
                 
             break;
             case 6:
                
-               message_t_sent("Please enter the value " + balance_label_find());
+               message_t_sent(bundle_manager.getString("evalue") + " " + balance_label_find());
                selected.set_hash_to_send(value);
                selected.update_state(7);
                
@@ -415,14 +448,14 @@ public class telegramwalletmessagehandler {
                 {    
                     String result = command.generic_send_from_to_address(current_id, selected.get_hash_to_send(), new BigDecimal(value));
                     message_t_sent(wallet_name.get(type_wallet));
-                    message_t_sent("txid result");
+                    message_t_sent(bundle_manager.getString("etxid"));
                     message_t_sent(result);
                     select_wallet();
                     selected.update_state(2);
                 }
                 else
                 {                       
-                    message_t_sent("Please enter the value " + balance_label_find());
+                    message_t_sent(bundle_manager.getString("evalue") + " " + balance_label_find());
                     selected.update_state(7);
                 }
                 
@@ -639,8 +672,22 @@ public class telegramwalletmessagehandler {
                             current_id = received.split(":")[1];
                             selected = aux;
                             
-
-                            if(received.split(":")[0].toLowerCase().compareTo("reset") == 0)
+                            if(bundle_manager != null)
+                            {
+                                if(received.split(":")[0].toUpperCase().compareTo(bundle_manager.getString("reset")) == 0)
+                                {
+                                     selected.set_wallet_hash("");
+                                     selected.set_wallet("");
+                                     selected.update_state(0); 
+                                }
+                                else if(received.split(":")[0].toLowerCase().compareTo("reset") == 0)
+                                {
+                                     selected.set_wallet_hash("");
+                                     selected.set_wallet("");
+                                     selected.update_state(0); 
+                                }
+                            }
+                            else if(received.split(":")[0].toLowerCase().compareTo("reset") == 0)
                             {
                                  selected.set_wallet_hash("");
                                  selected.set_wallet("");

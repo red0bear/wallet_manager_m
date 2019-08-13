@@ -279,6 +279,9 @@ public class telegramwalletmessagehandler {
         if(value.toUpperCase().compareTo("ENGLISH - US") == 0)
         {
             bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("en", "EN"));
+        }if(value.toUpperCase().compareTo("FRENCH - FR") == 0)
+        {
+            bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("fr", "FR"));
         }else if(value.toUpperCase().compareTo("PORTUGUES - PT") == 0)
         {
             bundle_manager = ResourceBundle.getBundle("bundles.bundle_lenguage", new Locale("pt", "PT"));

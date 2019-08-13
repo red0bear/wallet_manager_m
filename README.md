@@ -70,3 +70,6 @@ Wallet have two ways to work:
 1. CELL PHONE MODE : You can use buttons instead keyboard
 2. CMD LINE MODE : you can use keyboard command to make some operations
  
+# Multi language
+
+Added multi lingual bundle to make more easy to people who don't know another language use it more easy. To help adding in your language please look in https://github.com/red0bear/wallet_manager_m/blob/master/src/main/java/bundles/bundle_lenguage_en.properties to more info in how to build. 

@@ -1,6 +1,10 @@
+# Donate 
+
+Mining : 41zNCENLq1HEF1VFyrwFePPwaffMGBSnEKD9BqYCApXGaWdViPu2tfHG9xe1wMopXP7iQaQcDCckRCVDtsT4TkUA1BU7DvP
+Direct : 8BLdZKQwyB282mtTbcU6vChnm23DzrD3pbKvZig18Ps9dtdF15wYMHcVHSHXwF8ZTkB1GPbkXMMAr3P5cBxKGdRbL8GTyxf
+
 # wallet_manager_m
 java front end to handle telegram and wallets deamons
-
 
 # purpose
 
